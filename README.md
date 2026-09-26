@@ -24,10 +24,8 @@ The base project is in [`src/openthread_rcp_xiao`](src/openthread_rcp_xiao). The
 
 Prebuilt images are kept in [`artifacts/`](artifacts/):
 
-- [XIAO MG24 OpenThread RCP HEX](artifacts/xiao_mg24_openthread_rcp_3.1.1.0_GitHub-fb274efe6_gsdk_2026.6.1.hex)
+- [XIAO MG24 OpenThread RCP external-antenna HEX](artifacts/xiao_mg24_openthread_rcp_external_3.1.1.0_GitHub-fb274efe6_gsdk_2026.6.1.hex)
 - [XIAO MG24 OpenThread RCP internal-antenna HEX](artifacts/xiao_mg24_openthread_rcp_internal_3.1.1.0_GitHub-fb274efe6_gsdk_2026.6.1.hex)
-
-The second link names the internal-antenna artifact produced by the internal manifest and can be committed alongside the existing image.
 
 ## Build both images
 
