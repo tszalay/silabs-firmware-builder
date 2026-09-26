@@ -1,55 +1,46 @@
-# Silicon Labs firmware builder repository
-This repository contains tools for building Zigbee, Thread, and Z-Wave firmwares for the
-Home Assistant Connect ZBT-1/SkyConnect, ZBT-2, ZWA-2, and Yellow. The firmware
-manifests are entirely generic, however, and are intended to be written easily for any
-Silicon Labs chips.
+# XIAO MG24 OpenThread RCP firmware
 
-It uses the Silicon Labs Gecko SDK and proprietary Silicon Labs tools such as the
-Silicon Labs Configurator (slc) and the Simplicity Commander standalone utility.
+This repository is a personal fork of [Nabu Casa's siliconlabs-firmware-builder](https://github.com/NabuCasa/silabs-firmware-builder). Use the upstream repository for Nabu Casa and Home Assistant firmware. This fork adds buildable OpenThread RCP images for the Seeed Studio XIAO MG24.
 
-## Background
-The project templates in this repository are configured and built for specific boards
-using manifest files. For example, the [`zbt2_zigbee_ncp.yaml`](https://github.com/NabuCasa/silabs-firmware-builder/blob/main/manifests/nabucasa/zbt2/zbt2_zigbee_ncp.yaml)
-manifest file configures the Zigbee firmware for the Connect ZBT-2.
+## What was added
 
-# Building firmwares
-The easiest way to build firmware is using Docker. The container image includes all
-required SDKs, toolchains, and tools pre-installed.
+The XIAO MG24 target is based on Nabu Casa's OpenThread RCP project and targets the `EFR32MG24B220F1536IM48` device. It uses:
+
+- EUSART0 on PA8/PA9
+- 460800 baud
+- No hardware flow control
+- A 512-byte receive buffer
+- A 4096-byte OpenThread transmit buffer
+- Nabu Casa's OpenThread UART reliability patches
+- PB5 high to enable the XIAO RF switch
+- PB4 to select the antenna
+
+The base project is in [`src/openthread_rcp_xiao`](src/openthread_rcp_xiao). The antenna variants are selected at compile time:
+
+- [`xiao_mg24_openthread_rcp_external.yaml`](manifests/custom/xiao_mg24_openthread_rcp_external.yaml) selects the external antenna.
+- [`xiao_mg24_openthread_rcp_internal.yaml`](manifests/custom/xiao_mg24_openthread_rcp_internal.yaml) selects the onboard antenna.
+
+## Prebuilt images
+
+Prebuilt images are kept in [`artifacts/`](artifacts/):
+
+- [XIAO MG24 OpenThread RCP HEX](artifacts/xiao_mg24_openthread_rcp_3.1.1.0_GitHub-fb274efe6_gsdk_2026.6.1.hex)
+- [XIAO MG24 OpenThread RCP internal-antenna HEX](artifacts/xiao_mg24_openthread_rcp_internal_3.1.1.0_GitHub-fb274efe6_gsdk_2026.6.1.hex)
+
+The second link names the internal-antenna artifact produced by the internal manifest and can be committed alongside the existing image.
+
+## Build both images
+
+The Docker image supplies the Linux Silicon Labs Configurator, SDK, toolchain, and Nabu Casa build scripts. From the repository root:
 
 ```bash
-git clone https://github.com/NabuCasa/silabs-firmware-builder
-cd silabs-firmware-builder
-
-docker run --rm -v $(pwd):/repo ghcr.io/nabucasa/silabs-firmware-builder \
-    --manifest manifests/nabucasa/skyconnect_zigbee_ncp.yaml \
-    --output gbl \
+for antenna in external internal; do
+  docker run --rm -v "$(pwd):/repo" \
+    ghcr.io/nabucasa/silabs-firmware-builder \
+    --manifest "manifests/custom/xiao_mg24_openthread_rcp_${antenna}.yaml" \
+    --output hex \
     --output-dir artifacts
+done
 ```
 
-Once the build is complete, the firmware will be in the `artifacts` directory.
-
-# Development
-## Setting up Simplicity Studio (for development)
-If you are going to be developing using Simplicity Studio, note that each project can
-potentially use a different Gecko SDK release. It is recommended to forego the typical
-Simplicity Studio SDK management workflow and manually manage SDKs:
-
-1. Clone a specific version of the Gecko SDK:
-   ```bash
-   # For macOS
-   mkdir ~/SimplicityStudio/SDKs/gecko_sdk_4.4.2
-   cd ~/SimplicityStudio/SDKs/gecko_sdk_4.4.2
-
-   git clone -b v4.4.2 https://github.com/SiliconLabs/gecko_sdk .
-   git checkout -b branch_tag
-   ```
-
-2. Open preferences, navigate to **Simplicity Studio > SDKs**, click the `Add SDK...` button, and browse to the above location.
-3. Once the SDK is added, select its entry and click `Add Extension...`.
-4. In this repo, add the extensions under `gecko_sdk_extensions`.
-
-Repeat this process for every necessary SDK version.
-
-> [!TIP]
-> If you have build issues after switching commits, make sure to delete any
-> `gecko_sdk_*` and `template` folders from the Simplicity working tree.
+The resulting HEX images are written to `artifacts/` and can be programmed directly with OpenOCD or another SWD programmer.
