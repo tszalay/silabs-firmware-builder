@@ -47,7 +47,7 @@ The resulting HEX images are written to `artifacts/` and can be programmed direc
 
 The [XIAO MG24 bootloader target](manifests/custom/xiao_mg24_bootloader_spiflash.yaml) builds a Gecko application bootloader that stages firmware updates in the board's 4 MiB external SPI flash. It provides one 2 MiB update slot and reserves the first 24 KiB of internal flash for the bootloader; applications start at `0x08006000`.
 
-The bootloader uses EUSART1 for the flash interface (MOSI PB0, MISO PB1, SCLK PA0, CS PA6) at 1 MHz. Its [SFDP erase-size patch](src/bootloader_xiao_spiflash/sdk_patches/sfdp-erase-size.patch) makes sector erases work correctly with the onboard P25Q32SH flash.
+The bootloader uses EUSART1 for the flash interface (MOSI PB0, MISO PB1, SCLK PA0, CS PA6) at 1 MHz. Its [SFDP patch](src/bootloader_xiao_spiflash/sdk_patches/sfdp-flash-geometry.patch) reports the correct 4 KiB erase granularity and selects the correct erase commands for the onboard P25Q32SH flash.
 
 Build the HEX for initial SWD programming and the GBL for bootloader updates:
 
@@ -55,7 +55,7 @@ Build the HEX for initial SWD programming and the GBL for bootloader updates:
 docker run --rm -v "$(pwd):/repo" \
   ghcr.io/nabucasa/silabs-firmware-builder \
   --manifest manifests/custom/xiao_mg24_bootloader_spiflash.yaml \
-  --output hex --output gbl --output-dir artifacts/erase-fix
+  --output hex --output gbl --output-dir artifacts
 ```
 
-[Prebuilt images](artifacts/erase-fix/) are available in the same directory. An application can write its update GBL to slot 0, verify it, and request installation through the Gecko Bootloader API. The bootloader does not implement the download protocol; applications such as a Matter OTA requestor provide that part.
+[Prebuilt images](artifacts/) are available in the same directory. An application can write its update GBL to slot 0, verify it, and request installation through the Gecko Bootloader API. The bootloader does not implement the download protocol; applications such as a Matter OTA requestor provide that part.

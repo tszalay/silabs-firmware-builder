@@ -1,0 +1,40 @@
+--- a/bootloader/platform/bootloader/storage/spiflash_sfdp/btl_storage_spiflash_sfdp.c
++++ b/bootloader/platform/bootloader/storage/spiflash_sfdp/btl_storage_spiflash_sfdp.c
+@@ -397,15 +397,13 @@
+   spi_setCsInactive();
+ 
+   //This field specifies ‘N’ and is used to calculate  erase type size = 2^N bytes
+-  if (type4) {
+-    return (1U << type4);
+-  } else if (type3) {
+-    return (1U << type3);
+-  } else if (type2) {
+-    return (1U << type2);
+-  } else {
+-    return (1U << type1);
+-  }
++  // SFDP erase types are not ordered by size. The driver uses the
++  // hardcoded 64 KiB block erase opcode with this largest erase size.
++  uint32_t largest = type1;
++  if (type2 > largest) { largest = type2; }
++  if (type3 > largest) { largest = type3; }
++  if (type4 > largest) { largest = type4; }
++  return (1U << largest);
+ }
+ 
+ //Check if sectorerase is supported
+@@ -438,11 +436,9 @@
+                                 | BOOTLOADER_STORAGE_IMPL_CAPABILITY_PAGE_ERASE_REQUIRED);
+   flashInfo.pageEraseMs = SFDP_4KMaxEraseTime();
+   flashInfo.partEraseMs = SFDP_maxEraseChipTime();
+-  flashInfo.pageSize = SFDP_getPageSize();
+-  //Check if 4K sector erase is supported by the device
+-  if (!SFDP_sectorErase()) {
+-    flashInfo.pageSize = SFDP_eraseSize();
+-  }
++  // The API uses pageSize as the erase granularity. Keep the SFDP program
++  // page size for storage_writeRaw(), but report the actual erase sector here.
++  flashInfo.pageSize = SFDP_sectorErase() ? SFDP_getSectorSize() : SFDP_eraseSize();
+   flashInfo.partSize = getDeviceSize();
+   flashInfo.partDescription = NULL;
+   flashInfo.wordSizeBytes = DEVICE_WORD_SIZE;

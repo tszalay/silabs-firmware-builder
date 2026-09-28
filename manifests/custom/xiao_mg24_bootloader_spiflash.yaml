@@ -21,4 +21,4 @@ c_defines:
   SL_EUSART_EXTFLASH_CS_PIN: 6
 
 sdk_patches:
-  - sfdp-erase-size.patch
+  - sfdp-flash-geometry.patch
