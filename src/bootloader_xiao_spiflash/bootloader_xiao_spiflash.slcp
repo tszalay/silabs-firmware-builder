@@ -1,0 +1,24 @@
+project_name: bootloader_xiao_spiflash
+package: bootloader
+quality: development
+label: XIAO MG24 external SPI flash bootloader
+description: Gecko application bootloader with SFDP external storage; no UART transport.
+component:
+  - id: bootloader_core
+  - id: bootloader_crc
+  - id: bootloader_aes_sha_ecdsa
+  - id: bootloader_delay_driver
+  - id: bootloader_image_parser
+  - id: bootloader_common_storage_single
+  - id: bootloader_token_management
+  - id: bootloader_spiflash_storage_sfdp
+  - id: bootloader_spi_controller_eusart_driver
+configuration:
+  - name: BTL_STORAGE_BASE_ADDRESS
+    value: 0
+  - name: SLOT0_ENABLE
+    value: 1
+  - name: SLOT0_START
+    value: 0
+  - name: SLOT0_SIZE
+    value: 2097152
